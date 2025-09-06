@@ -14,34 +14,77 @@ import java.io.IOException;
 
 public class penrose extends PApplet {
 
-float l, phi, tolerableError, squareSize, w, h;
-float[] phiPowers, phiInversePowers;
-PVector[] notableRotations;
-ArrayList<Triangle> triangles;
-ArrayList<Triangle> matched;
-PVector disp;
-String status;
-CollisionChecker grid;
-int iterations;
+public void setup() {
+    
+    initValues();
+    frameRate(60);
+    // iterations = 0;
+}
+public void draw() {
+    // scale(height, height);
+    // strokeWeight(1.5 / height);
+    // translate(600, 400);
+    scale(height, height);
+    strokeWeight(1.5f / height);
+    if ("triangules".equals(status)) {
+        searchStep();
+        // saveFrame("frames/triangles_#####.png");
+    }
+    else if ("tiles".equals(status)) {
+        matchStep();
+        // saveFrame("frames/tiles_#####.png");
+    }
+    // fill(255);
+    // rect(disp.x, disp.y, squareSize, squareSize);
+    // rect(0, 0, w, h);
+}
 class HalfEdge {
     PVector v0, v1;
     Polygon owner;
     HalfEdge match;
-
+    float m, n; // y = mx + n
+    boolean vertical;
     HalfEdge(PVector v0, PVector v1, Polygon owner) {
         this.v0 = v0.copy();
         this.v1 = v1.copy();
         this.owner = owner;
         this.match = null;
+        if (eqFloats(v0.x, v1.x)) {
+            this.vertical = true;
+            this.m = Float.POSITIVE_INFINITY;
+            this.n = Float.POSITIVE_INFINITY;
+            return;
+        }
+        this.vertical = false;
+        this.m = (this.v0.y - this.v1.y) / (this.v0.x - this.v1.x);
+        this.n = this.v0.y - this.m * this.v0.x;
     }
     public void drawStructure() {
         stroke(125, 125, 125);
         line(v0.x, v0.y, v1.x, v1.y);
     }
-    public void tileDraw() {
+    public void drawTiling() {
         stroke(255);
-        if (this.match != null) return;
         line(v0.x, v0.y, v1.x, v1.y);
+    }
+    public void drawUnmatched() {
+        stroke(255, 0, 0);
+        line(v0.x, v0.y, v1.x, v1.y);
+    }
+    public boolean onHERange(PVector a) {
+        float minX = min(this.v0.x, this.v1.x) - tolerableError;
+        float maxX = max(this.v0.x, this.v1.x) + tolerableError;
+        float minY = min(this.v0.y, this.v1.y) - tolerableError;
+        float maxY = max(this.v0.y, this.v1.y) + tolerableError;
+        boolean onX =  minX <= a.x && a.x <= maxX;
+        boolean onY =  minY <= a.y && a.y <= maxY;
+        return onX && onY;
+    }
+    public boolean onTheLine(PVector a) {
+        return (eqFloats(a.y, this.m * a.x + this.n));
+    }
+    public boolean belongs(PVector a) {
+        return this.onHERange(a) && this.onTheLine(a);
     }
 }
 class Polygon {
@@ -64,6 +107,11 @@ class Polygon {
             e.drawStructure();
         }
     }
+    public void drawUnmatched() {
+        for (HalfEdge e : this.edges) {
+            e.drawUnmatched();
+        }
+    }
 }
 class Triangle extends Polygon{
     boolean reflected;
@@ -72,6 +120,8 @@ class Triangle extends Polygon{
     float maxX;
     float minY;
     float maxY;
+    boolean expandedToTile;
+    float centerDistance;
     Triangle(PVector position, int rotation, String type, boolean reflected, int phiPowerOfLargest) {
         super(position, rotation, type);
         this.phiPowerOfLargest = phiPowerOfLargest;
@@ -90,6 +140,8 @@ class Triangle extends Polygon{
         this.maxX = max(xValues);
         this.minY = min(yValues);
         this.maxY = max(yValues);
+        this.expandedToTile = false;
+        this.centerDistance = PVector.sub(new PVector(minX + maxX, minY + maxY).mult(0.5f), new PVector(w/2, h/2)).mag();
     }
     //Calcula los vertices del nuevo triangulo
     public void calculateTriangle() {
@@ -185,9 +237,18 @@ class Triangle extends Polygon{
         }
         return false;
     }
+    public boolean intersectsWindow() {
+        for (HalfEdge e : this.edges) {
+            if (edgesIntersect(e, new HalfEdge(new PVector(0, 0), new PVector(w, 0), null))) return true;
+            if (edgesIntersect(e, new HalfEdge(new PVector(w, 0), new PVector(w, h), null))) return true;
+            if (edgesIntersect(e, new HalfEdge(new PVector(w, h), new PVector(0, h), null))) return true;
+            if (edgesIntersect(e, new HalfEdge(new PVector(0, h), new PVector(0, 0), null))) return true;
+        }
+        return false;
+    }
     //Revisa si la ventana y el triangulo estan suficientemente cerca
     public boolean nearWindow() {
-        return this.inWindow() || this.windowIn();
+        return this.inWindow() || this.windowIn() || this.intersectsWindow();
     }
     public void countMatches() {
         int matches = 0;
@@ -195,22 +256,260 @@ class Triangle extends Polygon{
             if (e.match != null) matches++;
         }
     }
-    //Dibuja las teselas resultantes en un color más fuerte
-    public void tileDraw() {
-        for (HalfEdge e : this.edges) {
-            e.tileDraw();
+    public boolean matched() {
+        if (!this.reflected && this.edges[0].match == null) return false;
+        if (this.reflected && this.edges[2].match == null) return false;
+        return true;
+    }
+    public Tile generateTile() {
+        if (!this.matched()) return null;
+        if (this.expandedToTile) return null;
+        this.expandedToTile = true;
+        PVector tilePos = this.position;
+        int tileRot;
+        if ("acute".equals(this.type)) tileRot = !this.reflected ? (this.rotation + 19) % 20 : (this.rotation + 1) % 20;
+        else tileRot = !this.reflected ? (this.rotation + 17) % 20 : (this.rotation + 3) % 20;
+        String tileType = "acute".equals(this.type) ? "kite" : "dart";
+        return new Tile(tilePos, tileRot, tileType);
+    }
+}
+//Insertion Sort in place básico
+public void sortTriangles(ArrayList<Triangle> triangles) {
+    int n = triangles.size();
+    for (int i = 1 ; i < n; i++) {
+        Triangle key = triangles.get(i);
+        int j = i - 1;
+        while (j >= 0 && - triangles.get(j).centerDistance > - key.centerDistance) {
+            triangles.set(j + 1, triangles.get(j));
+            j = j - 1;
         }
-        this.countMatches();
+        triangles.set(j + 1, key);
+    }
+}
+public boolean edgesIntersect(HalfEdge a, HalfEdge b) {
+    if (a.vertical && b.vertical) {
+        if (!eqFloats(a.v0.x, b.v0.x)) return false;
+        boolean aInB = (a.v0.y - min(b.v0.y, b.v1.y) >= tolerableError && (max(b.v0.y, b.v1.y) - a.v0.y >= tolerableError));
+        boolean bInA = (b.v0.y - min(a.v0.y, a.v1.y) >= tolerableError && (max(a.v0.y, a.v1.y) - b.v0.y >= tolerableError));
+        return aInB || bInA;
+    }
+    if (a.vertical || b.vertical) {
+        HalfEdge vertical = a.vertical ? a : b;
+        HalfEdge nonVertical = a.vertical ? b : a;
+        float iX = vertical.v0.x;
+        float iY = nonVertical.m * iX + nonVertical.n;
+        boolean onVertical = iY - min(vertical.v0.y, vertical.v1.y) >= tolerableError && (max(vertical.v0.y, vertical.v1.y) - iY >= tolerableError);
+        boolean onNonVertical = iX - min(nonVertical.v0.x, nonVertical.v1.x) >= tolerableError && (max(nonVertical.v0.x, nonVertical.v1.x) - iX >= tolerableError);
+        return onVertical && onNonVertical;
+    }
+    if (eqFloats(a.m, b.m)) return a.belongs(b.v0) || a.belongs(b.v1) || b.belongs(a.v0) || b.belongs(a.v1);
+    float iX = (a.n - b.n) / (b.m - a.m);
+    float iY = a.m * iX + a.n;
+    PVector intersection = new PVector(iX, iY);
+    return a.onHERange(intersection) && b.onHERange(intersection);
+}
+String[][] letters;
+HashMap<Character, Integer> charToIndex;;
+
+
+public void initLetters() {
+    letters = new String[27][];
+    letters[0] = new String[] {
+        "1111",
+        "1001",
+        "1111",
+        "1001",
+        "1001"
+    };
+    letters[1] = new String[] {
+        "1110",
+        "1001",
+        "1110",
+        "1001",
+        "1110"
+    };
+    letters[2] = new String[] {
+        "1111",
+        "1000",
+        "1000",
+        "1000",
+        "1111"
+    };
+    letters[3] = new String[] {
+        "1110",
+        "1001",
+        "1001",
+        "1001",
+        "1110"
+    };
+    letters[4] = new String[] {
+        "1111",
+        "1000",
+        "1110",
+        "1000",
+        "1111"
+    };
+    letters[5] = new String[] {
+        "1111",
+        "1000",
+        "1110",
+        "1000",
+        "1000"
+    };
+    letters[6] = new String[] {
+        "0111",
+        "1000",
+        "1010",
+        "1001",
+        "1111"
+    };
+    letters[7] = new String[] {
+        "1001",
+        "1001",
+        "1111",
+        "1001",
+        "1001"
+    };
+    letters[8] = new String[] {
+        "1111",
+        "0110",
+        "0110",
+        "0110",
+        "1111"
+    };
+    letters[9] = new String[] {
+        "1111",
+        "0100",
+        "0100",
+        "0101",
+        "0011"
+    };
+    letters[10] = new String[] {
+        "1001",
+        "1011",
+        "1100",
+        "1010",
+        "1001"
+    };
+    letters[11] = new String[] {
+        "1100",
+        "1100",
+        "1100",
+        "1100",
+        "1111"
+    };
+    letters[12] = new String[] {
+        "1001",
+        "1111",
+        "1001",
+        "1001",
+        "1001"
+    };
+    letters[13] = new String[] {
+        "1001",
+        "1001",
+        "1101",
+        "1011",
+        "1001"
+    };
+    letters[14] = new String[] {
+        "1111",
+        "1001",
+        "1001",
+        "1001",
+        "1111"
+    };
+    letters[15] = new String[] {
+        "1111",
+        "1001",
+        "1111",
+        "1000",
+        "1000"
+    };
+    letters[16] = new String[] {
+        "0111",
+        "1001",
+        "1001",
+        "1111",
+        "0001"
+    };
+    letters[17] = new String[] {
+        "1111",
+        "1001",
+        "1111",
+        "1010",
+        "1001"
+    };
+    letters[18] = new String[] {
+        "0111",
+        "1000",
+        "1111",
+        "0001",
+        "1110"
+    };
+    letters[19] = new String[] {
+        "1111",
+        "0110",
+        "0110",
+        "0110",
+        "0110"
+    };
+    letters[20] = new String[] {
+        "1001",
+        "1001",
+        "1001",
+        "1001",
+        "1111"
+    };
+    letters[21] = new String[] {
+        "1001",
+        "1001",
+        "1010",
+        "1100",
+        "1000"
+    };
+    letters[22] = new String[] {
+        "1001",
+        "1001",
+        "1001",
+        "1111",
+        "1001"
+    };
+    letters[23] = new String[] {
+        "1001",
+        "0110",
+        "0110",
+        "0110",
+        "1001"
+    };
+    letters[24] = new String[] {
+        "1001",
+        "1001",
+        "1001",
+        "0110",
+        "0110"
+    };
+    letters[25] = new String[] {
+        "1111",
+        "0010",
+        "0100",
+        "1000",
+        "1111"
+    };
+    charToIndex = new HashMap<Character, Integer>();
+    for (int i = 0; i < 26; i++) {
+        charToIndex.put((char)('A' + i), i);
     }
 }
 class CollisionChecker {
     ArrayList<ArrayList<ArrayList<Triangle>>> grid;
     int wGrid;
     int hGrid;
+    ArrayList<Triangle> unMatched;
     CollisionChecker() {
         //discretiza el plano en casillas de l x l aprox
-        this.wGrid = floor(w/l);
-        this.hGrid = floor(h/l);
+        this.wGrid = floor(w/l) + 1;
+        this.hGrid = floor(h/l) + 1;
         // println("grid size", this.wGrid, this.hGrid);
         //Filas
         this.grid = new ArrayList<ArrayList<ArrayList<Triangle>>>(this.hGrid);
@@ -222,6 +521,7 @@ class CollisionChecker {
                 this.grid.get(i).add(new ArrayList<Triangle>());
             }
         }
+        this.unMatched = new ArrayList<Triangle>();
     }
     public int[][] triangleGridRectangle(Triangle a) {
         //Discretiza las coordenadas del triangulo para ubicar en las casillas.
@@ -243,16 +543,28 @@ class CollisionChecker {
             for (int j = gridRectangle[0][0]; j <= gridRectangle[0][1]; j++) {
                 for (Triangle t : this.grid.get(i).get(j)) {
                     matchTriangles(a, t);
+                    if (a.matched()) {
+                        this.unMatched.remove(t);
+                        return;
+                    }
                 }
                 this.grid.get(i).get(j).add(a);
             }
         }
+        this.unMatched.add(a);
     }
     public void add(Triangle a) {
         //Calcula las casillas que toca
         int[][] rectangle = this.triangleGridRectangle(a);
         //Agrega al triangulo a las casillas que le corresponde
         this.linkTriangleToGrid(a, rectangle);
+    }
+    public void drawUnmatched() {
+        println("Unmatched triangles:", this.unMatched.size());
+        for (Triangle t : this.unMatched) {
+            println("Unmatched triangle at", t.position);
+            t.drawUnmatched();
+        }
     }
 }
 public void matchTriangles(Triangle a, Triangle b) {
@@ -300,7 +612,95 @@ public boolean eqFloats(float a, float b) {
     if (a >= b) return a - b <= tolerableError;
     return b - a <= tolerableError;
 }
+public void searchStep() {
+    ArrayList<Triangle> aux = new ArrayList<Triangle>();
+    //Generamos recursivamente a los sucesores
+    for (Triangle t : triangles) {
+        for (Triangle succ : t.succ()) {
+            //Agregamos solo los triangulos cercanos a la ventana para optimizar
+            //Los demas no se veran, no valen la pena
+            if (succ.nearWindow()) aux.add(succ);
+        }
+    }
+    //Si no hay sucesores no se puede dividir mas y se pasa a la etapa de generacion de teselas
+    if (aux.isEmpty()) {
+        status = "tiles";
+        frameRate(60);
+        sortTriangles(triangles);
+        return;
+    }
+    //Se ingresan los sucesores a la estructura principal para repetir
+    triangles = aux;
+    //Los dibujamos para mostrar el proceso
+    background(0);
+    for (Triangle t : triangles) {
+        t.drawStructure();
+    }
+}
+public void matchStep() {
+    if (triangles.isEmpty()) {
+        noLoop();
+        println("Kites:", kites, "Darts:", darts);
+        return;
+    }
+    Triangle current = triangles.remove(triangles.size() - 1);
+    grid.add(current);
+    Tile tile = current.generateTile();
+    if (tile != null) tiles.add(tile);
+    background(0);
+    for (Triangle t : triangles) {
+        t.drawStructure();
+    }
+    for (Tile t : tiles) {
+        t.drawTiling();
+    }
+    grid.drawUnmatched();
+}
+class Tile extends Polygon{
+    float centerDistance;
+    Tile(PVector position, int rotation, String type) {
+        super(position, rotation, type);
+        this.calculateTile();
+        this.calculateCenterDistance();
+        if ("kite".equals(type)) kites++;
+        else darts++;
+    }
+    public void calculateTile() {
+        this.vertices[0] = this.position.copy();
+        for (int i = 1; i < 4; i++) {
+            if ("kite".equals(this.type)) this.vertices[i] = PVector.add(this.vertices[0], notableRotations[(16 + 2 * i + this.rotation) % 20].copy().mult(phiPowers[1]));
+            else this.vertices[i] = PVector.add(this.vertices[0], notableRotations[(8 + 6 * i + this.rotation) % 20]);
+            this.edges[i - 1] = new HalfEdge(this.vertices[i - 1], this.vertices[i], this);
+        }
+        this.edges[3] = new HalfEdge(this.vertices[3], this.vertices[0], this);
+    }
+    public void calculateCenterDistance() {
+        PVector avgVertex = new PVector(0, 0);
+        for (PVector v : this.vertices) {
+            avgVertex.add(v);
+        }
+        avgVertex.div(this.vertices.length);
+        avgVertex.sub(new PVector(w/2, h/2));
+        this.centerDistance = avgVertex.mag();
+    }
+    public void drawTiling() {
+        for (HalfEdge e : this.edges) {
+            e.drawTiling();
+        }
+    }
+}
+float l, phi, tolerableError, squareSize, w, h;
+float[] phiPowers, phiInversePowers;
+PVector[] notableRotations;
+ArrayList<Triangle> triangles;
+ArrayList<Tile> tiles;
+PVector disp;
+String status;
+CollisionChecker grid;
+int iterations;
+int kites, darts;
 public void initValues() {
+    randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
     w = 1.5f;
     h = 1;
@@ -321,7 +721,7 @@ public void initValues() {
     //Este angulo sirve para calcular la ubicaciones de la ventana
     float angle = "acute".equals(firstTriangleType) ? (TWO_PI/5) : (TWO_PI/10);
     //Calculamos cuántas potencias de phi veces debe multiplicarse l para generar un triangulo que encierre al cuadrado
-    int d = round(log((squareSize/l) * ((2/tan(angle)) + 1)) / log(phi));
+    int d = round(log((squareSize/l) * ((2/tan(angle)) + 1)) / log(phi)) + 1;
     //Ajuste segun el tipo de triángulo
     if ("acute".equals(firstTriangleType)) d++;
     //Potencias de phi precalculadas
@@ -343,72 +743,10 @@ public void initValues() {
     //El primer paso es el de generar triangulos
     status = "triangules";
     //Estructuras para la etapa de generación de teselas
-    matched = new ArrayList<Triangle>();
+    tiles = new ArrayList<Tile>();
     grid = new CollisionChecker();
-}
-public void searchStep() {
-    ArrayList<Triangle> aux = new ArrayList<Triangle>();
-    //Generamos recursivamente a los sucesores
-    for (Triangle t : triangles) {
-        for (Triangle succ : t.succ()) {
-            //Agregamos solo los triangulos cercanos a la ventana para optimizar
-            //Los demas no se veran, no valen la pena
-            if (succ.nearWindow()) aux.add(succ);
-        }
-    }
-    //Si no hay sucesores no se puede dividir mas y se pasa a la etapa de generacion de teselas
-    if (aux.isEmpty()) {
-        status = "tiles";
-        frameRate(60);
-        return;
-    }
-    //Se ingresan los sucesores a la estructura principal para repetir
-    triangles = aux;
-    //Los dibujamos para mostrar el proceso
-    background(0);
-    for (Triangle t : triangles) {
-        t.drawStructure();
-    }
-}
-public void matchStep() {
-    if (triangles.isEmpty()) {
-        noLoop();
-        return;
-    }
-    Triangle current = triangles.remove(triangles.size() - 1);
-    grid.add(current);
-    matched.add(current);
-    background(0);
-    for (Triangle t : triangles) {
-        t.drawStructure();
-    }
-    for (Triangle t : matched) {
-        t.tileDraw();
-    }
-}
-public void setup() {
-    
-    initValues();
-    frameRate(60);
-    // iterations = 0;
-}
-public void draw() {
-    // scale(height, height);
-    // strokeWeight(1.5 / height);
-    // translate(600, 400);
-    scale(height, height);
-    strokeWeight(1.5f / height);
-    if ("triangules".equals(status)) {
-        searchStep();
-        saveFrame("frames/triangles_#####.png");
-    }
-    else if ("tiles".equals(status)) {
-        matchStep();
-        saveFrame("frames/tiles_#####.png");
-    }
-    // fill(255);
-    // rect(disp.x, disp.y, squareSize, squareSize);
-    // rect(0, 0, w, h);
+    kites = 0;
+    darts = 0;
 }
   public void settings() {  size(1200, 800); }
   static public void main(String[] passedArgs) {
