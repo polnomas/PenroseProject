@@ -25,8 +25,9 @@ void searchStep() {
 }
 void matchStep() {
     if (triangles.isEmpty()) {
-        noLoop();
+        // noLoop();
         println("Kites:", kites, "Darts:", darts);
+        status = "style";
         return;
     }
     Triangle current = triangles.remove(triangles.size() - 1);
@@ -41,4 +42,20 @@ void matchStep() {
         t.drawTiling();
     }
     grid.drawUnmatched();
+}
+void styleStep() {
+    if (tiles.isEmpty()) {
+        noLoop();
+        // println("Kites:", kites, "Darts:", darts);
+        return;
+    }
+    Tile current = tiles.remove(tiles.size() - 1);
+    if (current.intraMargin()) styledTiles.add(current);
+    background(0);
+    for (Tile t : tiles) {
+        t.drawTiling();
+    }
+    for (Tile t : styledTiles) {
+        t.drawStyled();
+    }
 }

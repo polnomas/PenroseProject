@@ -1,6 +1,64 @@
+String word;
 String[][] letters;
-HashMap<Character, Integer> charToIndex;;
+HashMap<Character, Integer> charToIndex;
+LetterGrid mask;
 
+class LetterGrid {
+    int letterAmount, letterHeight, letterWidth, gridHeight, gridWidth;
+    float boxWidth, boxHeight;
+    int offsetX, offsetY;
+    boolean[][] bitMap;
+    LetterGrid() {
+        word = word.toUpperCase();
+        this.letterAmount = word.length();
+        this.letterWidth = letters[0][0].length();
+        this.letterHeight = letters[0].length;
+        this.gridWidth = this.letterWidth * (this.letterAmount + 2) + (this.letterAmount - 1);
+        this.gridHeight = round(2 * this.gridWidth / 3);
+        this.boxWidth = w / this.gridWidth;
+        this.boxHeight = h / this.gridHeight;
+        this.offsetX = this.letterWidth;
+        this.offsetY = floor((this.gridHeight - this.letterHeight) / 2);
+        int wordRectangle[][] = {
+            {this.offsetX, this.offsetX + this.letterWidth * this.letterAmount + (this.letterAmount - 1)},
+            {this.offsetY, this.offsetY + this.letterHeight}
+        };
+        println(wordRectangle[0][0], wordRectangle[0][1], wordRectangle[1][0], wordRectangle[1][1]);
+        String[] wordMap = new String[this.letterHeight];
+        char[] charArray = word.toCharArray();
+        for (int i = 0; i < this.letterHeight; i++) {
+            wordMap[i] = "";
+            for (int j = 0; j < charArray.length; j++) {
+                wordMap[i] += letters[charToIndex.get(charArray[j])][i];
+                wordMap[i] += j == charArray.length - 1 ? "" : "0";
+            }
+        }
+        println(wordMap.length, wordMap[0].length());
+        this.bitMap = new boolean[this.gridHeight][this.gridWidth];
+        for (int i = 0; i < this.gridHeight; i++) {
+            for (int j = 0; j < this.gridWidth; j++) {
+                if (wordRectangle[0][0] <= j && j < wordRectangle[0][1] && wordRectangle[1][0] <= i && i < wordRectangle[1][1]) {
+                    this.bitMap[i][j] = wordMap[i - this.offsetY].charAt(j - this.offsetX) == '1';
+                }
+                else {
+                    this.bitMap[i][j] = false;
+                }
+            }
+        }
+        for (boolean[] row : this.bitMap) {
+            for (boolean b : row) {
+                print(b ? "# " : "  ");
+            }
+            print('\n');
+        }
+    }
+    boolean itsLetter(Tile tile) {
+       int x = floor(tile.centroid.x / this.boxWidth);
+       int y = floor(tile.centroid.y / this.boxHeight);
+       if (x < 0 || x >= this.gridWidth || y < 0 || y >= this.gridHeight) return false;
+       return this.bitMap[y][x];
+    }
+}
 
 void initLetters() {
     letters = new String[27][];
@@ -190,4 +248,6 @@ void initLetters() {
     for (int i = 0; i < 26; i++) {
         charToIndex.put((char)('A' + i), i);
     }
+    word = "IVAN";
+    mask = new LetterGrid();
 }

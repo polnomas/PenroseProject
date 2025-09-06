@@ -24,12 +24,12 @@ class CollisionChecker {
         //Discretiza las coordenadas del triangulo para ubicar en las casillas.
         return new int[][] {
             {
-                max(floor(a.minX/l), 0),
-                min(floor(a.maxX/l), this.wGrid - 1)
+                max(floor(a.minX/l) - 1, 0),
+                min(floor(a.maxX/l) + 1, this.wGrid - 1)
             },
             {
-                max(floor(a.minY/l), 0),
-                min(floor(a.maxY/l), this.hGrid - 1)
+                max(floor(a.minY/l) - 1, 0),
+                min(floor(a.maxY/l) + 1, this.hGrid - 1)
             }
         };
     }
@@ -57,9 +57,9 @@ class CollisionChecker {
         this.linkTriangleToGrid(a, rectangle);
     }
     void drawUnmatched() {
-        println("Unmatched triangles:", this.unMatched.size());
+        // println("Unmatched triangles:", this.unMatched.size());
         for (Triangle t : this.unMatched) {
-            println("Unmatched triangle at", t.position);
+            // println("Unmatched triangle at", t.position);
             t.drawUnmatched();
         }
     }

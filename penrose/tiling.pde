@@ -1,5 +1,6 @@
 class Tile extends Polygon{
     float centerDistance;
+    PVector centroid;
     Tile(PVector position, int rotation, String type) {
         super(position, rotation, type);
         this.calculateTile();
@@ -22,12 +23,26 @@ class Tile extends Polygon{
             avgVertex.add(v);
         }
         avgVertex.div(this.vertices.length);
+        this.centroid = avgVertex.copy();
         avgVertex.sub(new PVector(w/2, h/2));
         this.centerDistance = avgVertex.mag();
     }
     void drawTiling() {
         for (HalfEdge e : this.edges) {
             e.drawTiling();
+        }
+    }
+    boolean intraMargin() {
+        for (PVector v : this.vertices) {
+            boolean onX = (v.x - margin >= tolerableError && w - margin - v.x >= tolerableError);
+            boolean onY = (v.y - margin >= tolerableError && h - margin - v.y >= tolerableError);
+            return onX && onY;
+        }
+        return false;
+    }
+    void drawStyled() {
+        if (mask.itsLetter(this)) {
+            this.drawTiling();
         }
     }
 }

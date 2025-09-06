@@ -8,6 +8,8 @@ String status;
 CollisionChecker grid;
 int iterations;
 int kites, darts;
+float margin;
+ArrayList<Tile> styledTiles;
 void initValues() {
     randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
@@ -16,7 +18,8 @@ void initValues() {
     //Tamaño del lado más corto en las teselas objetivo
     l = 0.03444;
     phi = (1 + sqrt(5)) / 2;
-    tolerableError = 1e-6;
+    margin = phi * l;
+    tolerableError = 1e-5;
     //La ventana estará dentro de un cuadrado más grande y podría ubicarse dentro de cualquier punto dentro de él
     squareSize = pow(phi, 4) * h;
     //Rotaciones precalculadas para optimizar
@@ -56,4 +59,5 @@ void initValues() {
     grid = new CollisionChecker();
     kites = 0;
     darts = 0;
+    styledTiles = new ArrayList<Tile>();
 }
