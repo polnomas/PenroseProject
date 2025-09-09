@@ -13,12 +13,12 @@ ArrayList<Tile> styledTiles;
 void initValues() {
     randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
-    w = 1.5;
-    h = 1;
+    // w = 1.5;
+    // h = 1;
     //Tamaño del lado más corto en las teselas objetivo
-    l = 0.03444;
-    phi = (1 + sqrt(5)) / 2;
-    margin = phi * l;
+    // l = 0.03444;
+    // margin = phi * l;
+    margin = 0;
     tolerableError = 1e-5;
     //La ventana estará dentro de un cuadrado más grande y podría ubicarse dentro de cualquier punto dentro de él
     squareSize = pow(phi, 4) * h;

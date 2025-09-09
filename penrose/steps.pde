@@ -47,6 +47,7 @@ void styleStep() {
     if (tiles.isEmpty()) {
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
+        saveFrame("jaime.png");
         return;
     }
     Tile current = tiles.remove(tiles.size() - 1);

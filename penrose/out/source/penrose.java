@@ -16,8 +16,8 @@ public class penrose extends PApplet {
 
 public void setup() {
     
-    initValues();
     initLetters();
+    initValues();
     frameRate(60);
     // iterations = 0;
 }
@@ -39,7 +39,7 @@ public void draw() {
         styleStep();
         // saveFrame("frames/styled_#####.png");
     }
-    saveFrame("frames/test_#####.png");
+    // saveFrame("frames/test_#####.png");
     // fill(255);
     // rect(disp.x, disp.y, squareSize, squareSize);
     // rect(0, 0, w, h);
@@ -377,7 +377,7 @@ class LetterGrid {
 }
 
 public void initLetters() {
-    letters = new String[27][];
+    letters = new String[26][];
     letters[0] = new String[] {
         "1111",
         "1001",
@@ -443,10 +443,10 @@ public void initLetters() {
     };
     letters[9] = new String[] {
         "1111",
-        "0100",
-        "0100",
-        "0101",
-        "0011"
+        "0010",
+        "0010",
+        "1010",
+        "1100"
     };
     letters[10] = new String[] {
         "1001",
@@ -560,12 +560,29 @@ public void initLetters() {
         "1000",
         "1111"
     };
+    int trueCount = 0;
+    for (String[] letter : letters) {
+        for (String row : letter) {
+            for (char c : row.toCharArray()) {
+                if (c == '1') trueCount++;
+            }
+        }
+    }
+    println("avg:", trueCount / 26);
     charToIndex = new HashMap<Character, Integer>();
     for (int i = 0; i < 26; i++) {
         charToIndex.put((char)('A' + i), i);
     }
-    word = "IVAN";
+    phi = (1 + sqrt(5)) / 2;
+    w = 1.5f;
+    h = 1;
+    word = "POL";
     mask = new LetterGrid();
+    float letterArea = mask.boxWidth * mask.boxHeight;
+    l = sqrt((phi - 1) * letterArea * (1 / tan(TWO_PI / 5)));
+    println("Letter l:", l);
+    println("Box size:", mask.boxWidth, mask.boxHeight);
+    println("Grid size:", mask.gridWidth, mask.gridHeight);
 }
 class CollisionChecker {
     ArrayList<ArrayList<ArrayList<Triangle>>> grid;
@@ -727,6 +744,7 @@ public void styleStep() {
     if (tiles.isEmpty()) {
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
+        saveFrame("jaime.png");
         return;
     }
     Tile current = tiles.remove(tiles.size() - 1);
@@ -802,12 +820,12 @@ ArrayList<Tile> styledTiles;
 public void initValues() {
     randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
-    w = 1.5f;
-    h = 1;
+    // w = 1.5;
+    // h = 1;
     //Tamaño del lado más corto en las teselas objetivo
-    l = 0.03444f;
-    phi = (1 + sqrt(5)) / 2;
-    margin = phi * l;
+    // l = 0.03444;
+    // margin = phi * l;
+    margin = 0;
     tolerableError = 1e-5f;
     //La ventana estará dentro de un cuadrado más grande y podría ubicarse dentro de cualquier punto dentro de él
     squareSize = pow(phi, 4) * h;

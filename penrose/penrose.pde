@@ -1,7 +1,7 @@
 void setup() {
     size(1200, 800);
-    initValues();
     initLetters();
+    initValues();
     frameRate(60);
     // iterations = 0;
 }
@@ -23,7 +23,7 @@ void draw() {
         styleStep();
         // saveFrame("frames/styled_#####.png");
     }
-    saveFrame("frames/test_#####.png");
+    // saveFrame("frames/test_#####.png");
     // fill(255);
     // rect(disp.x, disp.y, squareSize, squareSize);
     // rect(0, 0, w, h);
