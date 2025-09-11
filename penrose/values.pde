@@ -10,6 +10,7 @@ int iterations;
 int kites, darts;
 float margin;
 ArrayList<Tile> styledTiles;
+boolean show;
 void initValues() {
     randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
@@ -60,4 +61,5 @@ void initValues() {
     kites = 0;
     darts = 0;
     styledTiles = new ArrayList<Tile>();
+    show = false;
 }

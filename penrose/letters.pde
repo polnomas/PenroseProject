@@ -263,7 +263,10 @@ void initLetters() {
     word = "POL";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
-    l = sqrt((phi - 1) * letterArea * (1 / tan(TWO_PI / 5)));
+    float kitesPerLetter = 25;
+    float letterW = mask.letterWidth * mask.boxWidth;
+    println("letterW:", letterW);
+    l = sqrt((2 * letterW * letterW) / (kitesPerLetter * sqrt(20 * phi + 15)));
     println("Letter l:", l);
     println("Box size:", mask.boxWidth, mask.boxHeight);
     println("Grid size:", mask.gridWidth, mask.gridHeight);

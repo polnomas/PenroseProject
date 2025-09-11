@@ -3,6 +3,27 @@ void setup() {
     initLetters();
     initValues();
     frameRate(60);
+    boolean next = true;
+    while (next && !show) {
+        if ("triangules".equals(status)) {
+            // println("a");
+            searchStep();
+            // saveFrame("frames/triangles_#####.png");
+        }
+        else if ("tiles".equals(status)) {
+            // println("b");
+            matchStep();
+            // saveFrame("frames/tiles_#####.png");
+        }
+        else if ("style".equals(status)) {
+            // println("c");
+            styleStep();
+            if (tiles.isEmpty()) {
+                next = false;
+            }
+            // saveFrame("frames/styled_#####.png");
+        }
+    }
     // iterations = 0;
 }
 void draw() {

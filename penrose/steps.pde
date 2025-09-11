@@ -13,14 +13,20 @@ void searchStep() {
         status = "tiles";
         frameRate(60);
         sortTriangles(triangles);
+        background(0);
+        for (Triangle t : triangles) {
+            t.drawStructure();
+        }
         return;
     }
     //Se ingresan los sucesores a la estructura principal para repetir
     triangles = aux;
     //Los dibujamos para mostrar el proceso
-    background(0);
-    for (Triangle t : triangles) {
-        t.drawStructure();
+    if (show) {
+        background(0);
+        for (Triangle t : triangles) {
+            t.drawStructure();
+        }
     }
 }
 void matchStep() {
@@ -28,26 +34,35 @@ void matchStep() {
         // noLoop();
         println("Kites:", kites, "Darts:", darts);
         status = "style";
+        for (Tile t : tiles) {
+            t.drawTiling();
+        }
         return;
     }
     Triangle current = triangles.remove(triangles.size() - 1);
     grid.add(current);
     Tile tile = current.generateTile();
     if (tile != null) tiles.add(tile);
-    background(0);
-    for (Triangle t : triangles) {
-        t.drawStructure();
-    }
-    for (Tile t : tiles) {
+    if (show) {
+        background(0);
+        for (Triangle t : triangles) {
+            t.drawStructure();
+        }
+        for (Tile t : tiles) {
         t.drawTiling();
+        }
+        grid.drawUnmatched();
     }
-    grid.drawUnmatched();
 }
 void styleStep() {
     if (tiles.isEmpty()) {
+        println("Finished");
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
         saveFrame("jaime.png");
+        for (Tile t : styledTiles) {
+            t.drawStyled();
+        }
         return;
     }
     Tile current = tiles.remove(tiles.size() - 1);

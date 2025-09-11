@@ -19,6 +19,27 @@ public void setup() {
     initLetters();
     initValues();
     frameRate(60);
+    boolean next = true;
+    while (next && !show) {
+        if ("triangules".equals(status)) {
+            // println("a");
+            searchStep();
+            // saveFrame("frames/triangles_#####.png");
+        }
+        else if ("tiles".equals(status)) {
+            // println("b");
+            matchStep();
+            // saveFrame("frames/tiles_#####.png");
+        }
+        else if ("style".equals(status)) {
+            // println("c");
+            styleStep();
+            if (tiles.isEmpty()) {
+                next = false;
+            }
+            // saveFrame("frames/styled_#####.png");
+        }
+    }
     // iterations = 0;
 }
 public void draw() {
@@ -579,7 +600,10 @@ public void initLetters() {
     word = "POL";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
-    l = sqrt((phi - 1) * letterArea * (1 / tan(TWO_PI / 5)));
+    float kitesPerLetter = 25;
+    float letterW = mask.letterWidth * mask.boxWidth;
+    println("letterW:", letterW);
+    l = sqrt((2 * letterW * letterW) / (kitesPerLetter * sqrt(20 * phi + 15)));
     println("Letter l:", l);
     println("Box size:", mask.boxWidth, mask.boxHeight);
     println("Grid size:", mask.gridWidth, mask.gridHeight);
@@ -710,14 +734,20 @@ public void searchStep() {
         status = "tiles";
         frameRate(60);
         sortTriangles(triangles);
+        background(0);
+        for (Triangle t : triangles) {
+            t.drawStructure();
+        }
         return;
     }
     //Se ingresan los sucesores a la estructura principal para repetir
     triangles = aux;
     //Los dibujamos para mostrar el proceso
-    background(0);
-    for (Triangle t : triangles) {
-        t.drawStructure();
+    if (show) {
+        background(0);
+        for (Triangle t : triangles) {
+            t.drawStructure();
+        }
     }
 }
 public void matchStep() {
@@ -725,26 +755,35 @@ public void matchStep() {
         // noLoop();
         println("Kites:", kites, "Darts:", darts);
         status = "style";
+        for (Tile t : tiles) {
+            t.drawTiling();
+        }
         return;
     }
     Triangle current = triangles.remove(triangles.size() - 1);
     grid.add(current);
     Tile tile = current.generateTile();
     if (tile != null) tiles.add(tile);
-    background(0);
-    for (Triangle t : triangles) {
-        t.drawStructure();
-    }
-    for (Tile t : tiles) {
+    if (show) {
+        background(0);
+        for (Triangle t : triangles) {
+            t.drawStructure();
+        }
+        for (Tile t : tiles) {
         t.drawTiling();
+        }
+        grid.drawUnmatched();
     }
-    grid.drawUnmatched();
 }
 public void styleStep() {
     if (tiles.isEmpty()) {
+        println("Finished");
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
         saveFrame("jaime.png");
+        for (Tile t : styledTiles) {
+            t.drawStyled();
+        }
         return;
     }
     Tile current = tiles.remove(tiles.size() - 1);
@@ -817,6 +856,7 @@ int iterations;
 int kites, darts;
 float margin;
 ArrayList<Tile> styledTiles;
+boolean show;
 public void initValues() {
     randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
@@ -867,6 +907,7 @@ public void initValues() {
     kites = 0;
     darts = 0;
     styledTiles = new ArrayList<Tile>();
+    show = false;
 }
   public void settings() {  size(1200, 800); }
   static public void main(String[] passedArgs) {
