@@ -18,6 +18,7 @@ public void setup() {
     
     initLetters();
     initValues();
+    initColors();
     frameRate(60);
     boolean next = true;
     while (next && !show) {
@@ -64,6 +65,14 @@ public void draw() {
     // fill(255);
     // rect(disp.x, disp.y, squareSize, squareSize);
     // rect(0, 0, w, h);
+}
+int mainColor;
+int negativeColor;
+
+public void initColors() {
+    colorMode(HSB, 360, 100, 100);
+    mainColor = color(random(360), 35, 90);
+    negativeColor = color((hue(mainColor) + 50) % 360, 90, 35);
 }
 class HalfEdge {
     PVector v0, v1;
@@ -597,7 +606,7 @@ public void initLetters() {
     phi = (1 + sqrt(5)) / 2;
     w = 1.5f;
     h = 1;
-    word = "POL";
+    word = "JP";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
     float kitesPerLetter = 25;
@@ -780,7 +789,8 @@ public void styleStep() {
         println("Finished");
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
-        saveFrame("jaime.png");
+        // saveFrame("jaime.png");
+        background(0);
         for (Tile t : styledTiles) {
             t.drawStyled();
         }
@@ -788,12 +798,14 @@ public void styleStep() {
     }
     Tile current = tiles.remove(tiles.size() - 1);
     if (current.intraMargin()) styledTiles.add(current);
-    background(0);
-    for (Tile t : tiles) {
-        t.drawTiling();
-    }
-    for (Tile t : styledTiles) {
-        t.drawStyled();
+    if (show) {
+        background(0);
+        for (Tile t : tiles) {
+            t.drawTiling();
+        }
+        for (Tile t : styledTiles) {
+            t.drawStyled();
+        }
     }
 }
 class Tile extends Polygon{
@@ -840,7 +852,34 @@ class Tile extends Polygon{
     }
     public void drawStyled() {
         if (mask.itsLetter(this)) {
-            this.drawTiling();
+            int currentColor = color((hue(negativeColor) + random(36, 72)) % 360, 90, 35);
+            stroke(currentColor);
+            fill(currentColor);
+            quad(
+                this.vertices[0].x,
+                this.vertices[0].y,
+                this.vertices[1].x,
+                this.vertices[1].y,
+                this.vertices[2].x,
+                this.vertices[2].y,
+                this.vertices[3].x,
+                this.vertices[3].y
+                );
+        }
+        else {
+            int currentColor = color((hue(mainColor) + random(36, 72)) % 360, 35, 90);
+            stroke(currentColor);
+            fill(currentColor);
+            quad(
+                this.vertices[0].x,
+                this.vertices[0].y,
+                this.vertices[1].x,
+                this.vertices[1].y,
+                this.vertices[2].x,
+                this.vertices[2].y,
+                this.vertices[3].x,
+                this.vertices[3].y
+                );
         }
     }
 }
@@ -858,7 +897,7 @@ float margin;
 ArrayList<Tile> styledTiles;
 boolean show;
 public void initValues() {
-    randomSeed(1);
+    // randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
     // w = 1.5;
     // h = 1;

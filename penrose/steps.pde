@@ -59,7 +59,8 @@ void styleStep() {
         println("Finished");
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
-        saveFrame("jaime.png");
+        // saveFrame("jaime.png");
+        background(0);
         for (Tile t : styledTiles) {
             t.drawStyled();
         }
@@ -67,11 +68,13 @@ void styleStep() {
     }
     Tile current = tiles.remove(tiles.size() - 1);
     if (current.intraMargin()) styledTiles.add(current);
-    background(0);
-    for (Tile t : tiles) {
-        t.drawTiling();
-    }
-    for (Tile t : styledTiles) {
-        t.drawStyled();
+    if (show) {
+        background(0);
+        for (Tile t : tiles) {
+            t.drawTiling();
+        }
+        for (Tile t : styledTiles) {
+            t.drawStyled();
+        }
     }
 }

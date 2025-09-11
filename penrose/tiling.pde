@@ -42,7 +42,34 @@ class Tile extends Polygon{
     }
     void drawStyled() {
         if (mask.itsLetter(this)) {
-            this.drawTiling();
+            color currentColor = color((hue(negativeColor) + random(36, 72)) % 360, 90, 35);
+            stroke(currentColor);
+            fill(currentColor);
+            quad(
+                this.vertices[0].x,
+                this.vertices[0].y,
+                this.vertices[1].x,
+                this.vertices[1].y,
+                this.vertices[2].x,
+                this.vertices[2].y,
+                this.vertices[3].x,
+                this.vertices[3].y
+                );
+        }
+        else {
+            color currentColor = color((hue(mainColor) + random(36, 72)) % 360, 35, 90);
+            stroke(currentColor);
+            fill(currentColor);
+            quad(
+                this.vertices[0].x,
+                this.vertices[0].y,
+                this.vertices[1].x,
+                this.vertices[1].y,
+                this.vertices[2].x,
+                this.vertices[2].y,
+                this.vertices[3].x,
+                this.vertices[3].y
+                );
         }
     }
 }

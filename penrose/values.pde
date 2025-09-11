@@ -12,7 +12,7 @@ float margin;
 ArrayList<Tile> styledTiles;
 boolean show;
 void initValues() {
-    randomSeed(1);
+    // randomSeed(1);
     //La relacion es 2:3 pero se podría cambiar
     // w = 1.5;
     // h = 1;

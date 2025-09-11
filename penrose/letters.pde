@@ -260,7 +260,7 @@ void initLetters() {
     phi = (1 + sqrt(5)) / 2;
     w = 1.5;
     h = 1;
-    word = "POL";
+    word = "JP";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
     float kitesPerLetter = 25;

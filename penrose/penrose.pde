@@ -2,6 +2,7 @@ void setup() {
     size(1200, 800);
     initLetters();
     initValues();
+    initColors();
     frameRate(60);
     boolean next = true;
     while (next && !show) {
