@@ -42,8 +42,10 @@ class Tile extends Polygon{
     }
     void drawStyled() {
         if (mask.itsLetter(this)) {
-            color currentColor = color((hue(negativeColor) + random(36, 72)) % 360, 90, 35);
-            stroke(currentColor);
+            int factor = random(1) > 0.5 ? -1 : 1;
+            color currentColor = color((hue(negativeColor) + factor * random(0, 36)) % 360, 80, 90);
+            color strokeColor = color((hue(negativeColor) + factor * random(0, 36)) % 360, 80, 90);
+            stroke(strokeColor);
             fill(currentColor);
             quad(
                 this.vertices[0].x,
@@ -57,8 +59,10 @@ class Tile extends Polygon{
                 );
         }
         else {
-            color currentColor = color((hue(mainColor) + random(36, 72)) % 360, 35, 90);
-            stroke(currentColor);
+            int factor = random(1) > 0.5 ? -1 : 1;
+            color currentColor = color((hue(mainColor) + factor * random(0, 36)) % 360, 20, 90);
+            color strokeColor = color((hue(mainColor) + factor * random(0, 36)) % 360, 20, 90);
+            stroke(strokeColor);
             fill(currentColor);
             quad(
                 this.vertices[0].x,
