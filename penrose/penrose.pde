@@ -1,28 +1,39 @@
+import processing.pdf.*;
+
 void setup() {
     size(1200, 800);
     initLetters();
     initValues();
     frameRate(60);
-    boolean next = true;
-    while (next && !show) {
-        if ("triangules".equals(status)) {
-            // println("a");
-            searchStep();
-            // saveFrame("frames/triangles_#####.png");
-        }
-        else if ("tiles".equals(status)) {
-            // println("b");
-            matchStep();
-            // saveFrame("frames/tiles_#####.png");
-        }
-        else if ("style".equals(status)) {
-            // println("c");
-            styleStep();
-            if (tiles.isEmpty()) {
-                next = false;
+    if (!show) {
+        beginRecord(PDF, "salida.pdf");
+        scale(height, height);
+        strokeWeight(1.5 / height);
+        boolean next = true;
+        while (next && !show) {
+            if ("triangules".equals(status)) {
+                // println("a");
+                searchStep();
+                // saveFrame("frames/triangles_#####.png");
             }
-            // saveFrame("frames/styled_#####.png");
+            else if ("tiles".equals(status)) {
+                // println("b");
+                matchStep();
+                // saveFrame("frames/tiles_#####.png");
+            }
+            else if ("style".equals(status)) {
+                // println("c");
+                styleStep();
+                if (tiles.isEmpty()) {
+                    next = false;
+                }
+                // saveFrame("frames/styled_#####.png");
+            }
         }
+        println("Finalizando pdf");
+        endRecord();
+        println("pdf guardado");
+        exit();
     }
     // iterations = 0;
 }
@@ -30,8 +41,6 @@ void draw() {
     // scale(height, height);
     // strokeWeight(1.5 / height);
     // translate(600, 400);
-    scale(height, height);
-    strokeWeight(1.5 / height);
     if ("triangules".equals(status)) {
         searchStep();
         // saveFrame("frames/triangles_#####.png");
