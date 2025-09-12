@@ -60,7 +60,7 @@ void styleStep() {
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
         // saveFrame("jaime.png");
-        background(0);
+        background(backgroundColor, backgroundSaturation, backgroundBrightness);
         for (Tile t : styledTiles) {
             t.drawStyled();
         }

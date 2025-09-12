@@ -11,8 +11,9 @@ int kites, darts;
 float margin;
 ArrayList<Tile> styledTiles;
 boolean show;
+float[] notableAngles;
 void initValues() {
-    // randomSeed(1);
+    randomSeed(seedFromWord());
     //La relacion es 2:3 pero se podría cambiar
     // w = 1.5;
     // h = 1;
@@ -26,8 +27,11 @@ void initValues() {
     //Rotaciones precalculadas para optimizar
     notableRotations = new PVector[20];
     notableRotations[0] = new PVector(l, 0);
+    notableAngles = new float[20];
+    notableAngles[0] = 0;
     for (int i = 1; i < 20; i++) {
         notableRotations[i] = notableRotations[0].copy().rotate((TWO_PI/20) * i);
+        notableAngles[i] = (TWO_PI/20) * i;
     }
     //Elegimos un triángulo semilla al azar copn las mismas probabilidades
     String firstTriangleType = random(1) < 0.5 ? "acute" : "obtuse";

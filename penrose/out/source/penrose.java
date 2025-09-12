@@ -47,7 +47,7 @@ public void draw() {
     // scale(height, height);
     // strokeWeight(1.5 / height);
     // translate(600, 400);
-    scale(height, height);
+    scale(height / 2, height / 2);
     strokeWeight(1.5f / height);
     if ("triangules".equals(status)) {
         searchStep();
@@ -66,14 +66,31 @@ public void draw() {
     // rect(disp.x, disp.y, squareSize, squareSize);
     // rect(0, 0, w, h);
 }
-int mainColor;
-int negativeColor;
+float backgroundColor;
+int backgroundSaturation;
+int backgroundBrightness;
+float lettersColor;
+int lettersSaturation;
+int lettersBrightness;
+float arc1Color, arc2Color;
+int arc1Saturation, arc2Saturation, arc1Brightness, arc2Brightness;
 
 public void initColors() {
     colorMode(HSB, 360, 100, 100);
-    mainColor = color(random(360), 35, 90);
-    negativeColor = color((hue(mainColor) + 50) % 360, 90, 35);
-    // negativeColor = color(hue(mainColor), 90, 35);
+    //Fondo
+    backgroundColor = random(360);
+    backgroundSaturation = 20;
+    backgroundBrightness = 85;
+    //Letras
+    lettersColor = backgroundColor;
+    lettersSaturation = 80;
+    lettersBrightness = 80;
+    arc1Color = backgroundColor + 90;
+    arc2Color = backgroundColor - 18;
+    arc1Saturation = backgroundSaturation;
+    arc2Saturation = lettersSaturation - 30;
+    arc1Brightness = backgroundBrightness;
+    arc2Brightness = lettersBrightness + 20;
 }
 class HalfEdge {
     PVector v0, v1;
@@ -868,9 +885,9 @@ public void initLetters() {
     charToIndex.put(' ', 27);
     charToIndex.put('Á', 28);
     phi = (1 + sqrt(5)) / 2;
-    w = 1.5f;
-    h = 1;
-    word = "POL";
+    w = 3;
+    h = 2;
+    word = "caro";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
 
@@ -882,6 +899,14 @@ public void initLetters() {
     println("Letter l:", l);
     println("Box size:", mask.boxWidth, mask.boxHeight);
     println("Grid size:", mask.gridWidth, mask.gridHeight);
+}
+
+public int seedFromWord() {
+    int sum = 0;
+    for (Character c : word.toCharArray()) {
+        sum += charToIndex.get(c);
+    }
+    return sum;
 }
 class CollisionChecker {
     ArrayList<ArrayList<ArrayList<Triangle>>> grid;
@@ -1056,7 +1081,7 @@ public void styleStep() {
         noLoop();
         // println("Kites:", kites, "Darts:", darts);
         // saveFrame("jaime.png");
-        background(0);
+        background(backgroundColor, backgroundSaturation, backgroundBrightness);
         for (Tile t : styledTiles) {
             t.drawStyled();
         }
@@ -1117,40 +1142,69 @@ class Tile extends Polygon{
         return false;
     }
     public void drawStyled() {
-        if (mask.itsLetter(this)) {
-            int factor = random(1) > 0.5f ? -1 : 1;
-            int currentColor = color((hue(negativeColor) + factor * random(0, 36)) % 360, 80, 90);
-            int strokeColor = color((hue(negativeColor) + factor * random(0, 36)) % 360, 80, 90);
-            stroke(strokeColor);
-            fill(currentColor);
-            quad(
-                this.vertices[0].x,
-                this.vertices[0].y,
-                this.vertices[1].x,
-                this.vertices[1].y,
-                this.vertices[2].x,
-                this.vertices[2].y,
-                this.vertices[3].x,
-                this.vertices[3].y
-                );
+        int currentColor;
+        int strokeColor;
+        int arc1CurrentColor;
+        int arc2CurrentColor;
+        float arc1MinAngle;
+        float arc1MaxAngle;
+        float arc2MinAngle;
+        float arc2MaxAngle;
+        float arc1Radius;
+        float arc2Radius;
+        int arc1Center;
+        int arc2Center;
+        int factor = random(1) > 0.5f ? -1 : 1;
+        int secondFactor = random(1) > 0.5f ? -1 : 1;
+        if ("kite".equals(this.type)) {
+            arc1Center = 0;
+            arc2Center = 2;
+            arc1Radius = l;
+            arc2Radius = l / phi;
+            arc1MinAngle = notableAngles[this.rotation] - notableAngles[2];
+            arc1MaxAngle = notableAngles[this.rotation] + notableAngles[2];
+            arc2MinAngle = notableAngles[this.rotation] + notableAngles[6];
+            arc2MaxAngle = notableAngles[this.rotation] + notableAngles[14];
         }
         else {
-            int factor = random(1) > 0.5f ? -1 : 1;
-            int currentColor = color((hue(mainColor) + factor * random(0, 36)) % 360, 20, 90);
-            int strokeColor = color((hue(mainColor) + factor * random(0, 36)) % 360, 20, 90);
-            stroke(strokeColor);
-            fill(currentColor);
-            quad(
-                this.vertices[0].x,
-                this.vertices[0].y,
-                this.vertices[1].x,
-                this.vertices[1].y,
-                this.vertices[2].x,
-                this.vertices[2].y,
-                this.vertices[3].x,
-                this.vertices[3].y
-                );
+            arc1Center = 2;
+            arc2Center = 0;
+            arc1Radius = l / phi;
+            arc2Radius = l / pow(phi, 2);
+            arc1MinAngle = notableAngles[this.rotation] + notableAngles[8];
+            arc1MaxAngle = notableAngles[this.rotation] + notableAngles[12];
+            arc2MinAngle = notableAngles[this.rotation] - notableAngles[6];
+            arc2MaxAngle = notableAngles[this.rotation] + notableAngles[6];
         }
+        if (mask.itsLetter(this)) {
+            currentColor = color(lettersColor + factor * random(0, 36), lettersSaturation, lettersBrightness);
+            strokeColor = color(lettersColor + factor * random(0, 36), lettersSaturation, lettersBrightness);
+        }
+        else {
+            currentColor = color(backgroundColor + factor * random(0, 36), backgroundSaturation, backgroundBrightness);
+            strokeColor = color(backgroundColor + factor * random(0, 36), backgroundSaturation, backgroundBrightness);
+        }
+        arc1CurrentColor = color(arc1Color + secondFactor * random(54), arc1Saturation, arc1Brightness);
+        arc2CurrentColor = color(arc2Color + secondFactor * random(54), arc2Saturation, arc2Brightness);
+        stroke(strokeColor);
+        fill(currentColor);
+        quad(
+            this.vertices[0].x,
+            this.vertices[0].y,
+            this.vertices[1].x,
+            this.vertices[1].y,
+            this.vertices[2].x,
+            this.vertices[2].y,
+            this.vertices[3].x,
+            this.vertices[3].y
+        );
+        stroke(arc1CurrentColor);
+        noFill();
+        strokeWeight(2.0f / height);
+        arc(this.vertices[arc1Center].x, this.vertices[arc1Center].y, 2 * arc1Radius, 2 * arc1Radius, arc1MinAngle, arc1MaxAngle);
+        stroke(arc2CurrentColor);
+        arc(this.vertices[arc2Center].x, this.vertices[arc2Center].y, 2 * arc2Radius, 2 * arc2Radius, arc2MinAngle, arc2MaxAngle);
+        strokeWeight(1.5f / height);
     }
 }
 float l, phi, tolerableError, squareSize, w, h;
@@ -1166,8 +1220,9 @@ int kites, darts;
 float margin;
 ArrayList<Tile> styledTiles;
 boolean show;
+float[] notableAngles;
 public void initValues() {
-    // randomSeed(1);
+    randomSeed(seedFromWord());
     //La relacion es 2:3 pero se podría cambiar
     // w = 1.5;
     // h = 1;
@@ -1181,8 +1236,11 @@ public void initValues() {
     //Rotaciones precalculadas para optimizar
     notableRotations = new PVector[20];
     notableRotations[0] = new PVector(l, 0);
+    notableAngles = new float[20];
+    notableAngles[0] = 0;
     for (int i = 1; i < 20; i++) {
         notableRotations[i] = notableRotations[0].copy().rotate((TWO_PI/20) * i);
+        notableAngles[i] = (TWO_PI/20) * i;
     }
     //Elegimos un triángulo semilla al azar copn las mismas probabilidades
     String firstTriangleType = random(1) < 0.5f ? "acute" : "obtuse";

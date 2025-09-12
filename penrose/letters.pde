@@ -521,9 +521,9 @@ void initLetters() {
     charToIndex.put(' ', 27);
     charToIndex.put('Á', 28);
     phi = (1 + sqrt(5)) / 2;
-    w = 1.5;
-    h = 1;
-    word = "POL";
+    w = 3;
+    h = 2;
+    word = "caro";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
 
@@ -535,4 +535,12 @@ void initLetters() {
     println("Letter l:", l);
     println("Box size:", mask.boxWidth, mask.boxHeight);
     println("Grid size:", mask.gridWidth, mask.gridHeight);
+}
+
+int seedFromWord() {
+    int sum = 0;
+    for (Character c : word.toCharArray()) {
+        sum += charToIndex.get(c);
+    }
+    return sum;
 }

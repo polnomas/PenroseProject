@@ -41,39 +41,68 @@ class Tile extends Polygon{
         return false;
     }
     void drawStyled() {
-        if (mask.itsLetter(this)) {
-            int factor = random(1) > 0.5 ? -1 : 1;
-            color currentColor = color((hue(negativeColor) + factor * random(0, 36)) % 360, 80, 90);
-            color strokeColor = color((hue(negativeColor) + factor * random(0, 36)) % 360, 80, 90);
-            stroke(strokeColor);
-            fill(currentColor);
-            quad(
-                this.vertices[0].x,
-                this.vertices[0].y,
-                this.vertices[1].x,
-                this.vertices[1].y,
-                this.vertices[2].x,
-                this.vertices[2].y,
-                this.vertices[3].x,
-                this.vertices[3].y
-                );
+        color currentColor;
+        color strokeColor;
+        color arc1CurrentColor;
+        color arc2CurrentColor;
+        float arc1MinAngle;
+        float arc1MaxAngle;
+        float arc2MinAngle;
+        float arc2MaxAngle;
+        float arc1Radius;
+        float arc2Radius;
+        int arc1Center;
+        int arc2Center;
+        int factor = random(1) > 0.5 ? -1 : 1;
+        int secondFactor = random(1) > 0.5 ? -1 : 1;
+        if ("kite".equals(this.type)) {
+            arc1Center = 0;
+            arc2Center = 2;
+            arc1Radius = l;
+            arc2Radius = l / phi;
+            arc1MinAngle = notableAngles[this.rotation] - notableAngles[2];
+            arc1MaxAngle = notableAngles[this.rotation] + notableAngles[2];
+            arc2MinAngle = notableAngles[this.rotation] + notableAngles[6];
+            arc2MaxAngle = notableAngles[this.rotation] + notableAngles[14];
         }
         else {
-            int factor = random(1) > 0.5 ? -1 : 1;
-            color currentColor = color((hue(mainColor) + factor * random(0, 36)) % 360, 20, 90);
-            color strokeColor = color((hue(mainColor) + factor * random(0, 36)) % 360, 20, 90);
-            stroke(strokeColor);
-            fill(currentColor);
-            quad(
-                this.vertices[0].x,
-                this.vertices[0].y,
-                this.vertices[1].x,
-                this.vertices[1].y,
-                this.vertices[2].x,
-                this.vertices[2].y,
-                this.vertices[3].x,
-                this.vertices[3].y
-                );
+            arc1Center = 2;
+            arc2Center = 0;
+            arc1Radius = l / phi;
+            arc2Radius = l / pow(phi, 2);
+            arc1MinAngle = notableAngles[this.rotation] + notableAngles[8];
+            arc1MaxAngle = notableAngles[this.rotation] + notableAngles[12];
+            arc2MinAngle = notableAngles[this.rotation] - notableAngles[6];
+            arc2MaxAngle = notableAngles[this.rotation] + notableAngles[6];
         }
+        if (mask.itsLetter(this)) {
+            currentColor = color(lettersColor + factor * random(0, 36), lettersSaturation, lettersBrightness);
+            strokeColor = color(lettersColor + factor * random(0, 36), lettersSaturation, lettersBrightness);
+        }
+        else {
+            currentColor = color(backgroundColor + factor * random(0, 36), backgroundSaturation, backgroundBrightness);
+            strokeColor = color(backgroundColor + factor * random(0, 36), backgroundSaturation, backgroundBrightness);
+        }
+        arc1CurrentColor = color(arc1Color + secondFactor * random(54), arc1Saturation, arc1Brightness);
+        arc2CurrentColor = color(arc2Color + secondFactor * random(54), arc2Saturation, arc2Brightness);
+        stroke(strokeColor);
+        fill(currentColor);
+        quad(
+            this.vertices[0].x,
+            this.vertices[0].y,
+            this.vertices[1].x,
+            this.vertices[1].y,
+            this.vertices[2].x,
+            this.vertices[2].y,
+            this.vertices[3].x,
+            this.vertices[3].y
+        );
+        stroke(arc1CurrentColor);
+        noFill();
+        strokeWeight(2.0 / height);
+        arc(this.vertices[arc1Center].x, this.vertices[arc1Center].y, 2 * arc1Radius, 2 * arc1Radius, arc1MinAngle, arc1MaxAngle);
+        stroke(arc2CurrentColor);
+        arc(this.vertices[arc2Center].x, this.vertices[arc2Center].y, 2 * arc2Radius, 2 * arc2Radius, arc2MinAngle, arc2MaxAngle);
+        strokeWeight(1.5 / height);
     }
 }

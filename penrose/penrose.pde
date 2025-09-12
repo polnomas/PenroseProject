@@ -31,7 +31,7 @@ void draw() {
     // scale(height, height);
     // strokeWeight(1.5 / height);
     // translate(600, 400);
-    scale(height, height);
+    scale(height / 2, height / 2);
     strokeWeight(1.5 / height);
     if ("triangules".equals(status)) {
         searchStep();
