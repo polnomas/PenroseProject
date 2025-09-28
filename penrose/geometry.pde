@@ -20,15 +20,15 @@ class HalfEdge {
         this.n = this.v0.y - this.m * this.v0.x;
     }
     void drawStructure() {
-        stroke(125, 125, 125);
+        stroke(0, 0, 50);
         line(v0.x, v0.y, v1.x, v1.y);
     }
     void drawTiling() {
-        stroke(255);
+        stroke(0, 0, 100);
         line(v0.x, v0.y, v1.x, v1.y);
     }
     void drawUnmatched() {
-        stroke(255, 0, 0);
+        stroke(0, 100, 100);
         line(v0.x, v0.y, v1.x, v1.y);
     }
     boolean onHERange(PVector a) {

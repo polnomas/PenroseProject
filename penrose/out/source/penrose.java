@@ -114,15 +114,15 @@ class HalfEdge {
         this.n = this.v0.y - this.m * this.v0.x;
     }
     public void drawStructure() {
-        stroke(125, 125, 125);
+        stroke(0, 0, 50);
         line(v0.x, v0.y, v1.x, v1.y);
     }
     public void drawTiling() {
-        stroke(255);
+        stroke(0, 0, 100);
         line(v0.x, v0.y, v1.x, v1.y);
     }
     public void drawUnmatched() {
-        stroke(255, 0, 0);
+        stroke(0, 100, 100);
         line(v0.x, v0.y, v1.x, v1.y);
     }
     public boolean onHERange(PVector a) {
@@ -887,11 +887,11 @@ public void initLetters() {
     phi = (1 + sqrt(5)) / 2;
     w = 3;
     h = 2;
-    word = "caro";
+    word = "pol";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
 
-    float kitesPerLetter = 24;
+    float kitesPerLetter = 9;
     
     float letterW = mask.letterWidth * mask.boxWidth;
     println("letterW:", letterW);
@@ -1274,7 +1274,7 @@ public void initValues() {
     kites = 0;
     darts = 0;
     styledTiles = new ArrayList<Tile>();
-    show = false;
+    show = true;
 }
   public void settings() {  size(1200, 800); }
   static public void main(String[] passedArgs) {

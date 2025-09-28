@@ -65,5 +65,5 @@ void initValues() {
     kites = 0;
     darts = 0;
     styledTiles = new ArrayList<Tile>();
-    show = false;
+    show = true;
 }

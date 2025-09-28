@@ -523,11 +523,11 @@ void initLetters() {
     phi = (1 + sqrt(5)) / 2;
     w = 3;
     h = 2;
-    word = "caro";
+    word = "pol";
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
 
-    float kitesPerLetter = 24;
+    float kitesPerLetter = 9;
     
     float letterW = mask.letterWidth * mask.boxWidth;
     println("letterW:", letterW);
