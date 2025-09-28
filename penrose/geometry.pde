@@ -186,7 +186,7 @@ class Triangle extends Polygon{
     //Revisa si algun vertice está dentro de la ventana
     boolean inWindow() {
         for (PVector v : this.vertices) {
-            if ((v.x >= 0 && v.x <= w) && (v.y >= 0 && v.y <= h)) return true;
+            if ((v.x >= 0 - margin && v.x <= w + margin) && (v.y >= 0 - margin && v.y <= h + margin)) return true;
         }
         return false;
     }

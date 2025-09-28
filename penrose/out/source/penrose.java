@@ -20,51 +20,23 @@ public void setup() {
     initValues();
     initColors();
     frameRate(60);
-    boolean next = true;
-    while (next && !show) {
-        if ("triangules".equals(status)) {
-            // println("a");
-            searchStep();
-            // saveFrame("frames/triangles_#####.png");
-        }
-        else if ("tiles".equals(status)) {
-            // println("b");
-            matchStep();
-            // saveFrame("frames/tiles_#####.png");
-        }
-        else if ("style".equals(status)) {
-            // println("c");
-            styleStep();
-            if (tiles.isEmpty()) {
-                next = false;
-            }
-            // saveFrame("frames/styled_#####.png");
-        }
+    if (!show) {
+        generateTiling();
+        scale(height / 2, height / 2);
+        strokeWeight(1.5f / height);
+        // for (Tile t : tiles) {
+        //     t.drawStyled();
+        // }
+        // noLoop();
     }
     // iterations = 0;
 }
 public void draw() {
-    // scale(height, height);
-    // strokeWeight(1.5 / height);
-    // translate(600, 400);
     scale(height / 2, height / 2);
     strokeWeight(1.5f / height);
-    if ("triangules".equals(status)) {
-        searchStep();
-        // saveFrame("frames/triangles_#####.png");
+    for (Tile t : tiles) {
+        t.drawRainbow();
     }
-    else if ("tiles".equals(status)) {
-        matchStep();
-        // saveFrame("frames/tiles_#####.png");
-    }
-    else if ("style".equals(status)) {
-        styleStep();
-        // saveFrame("frames/styled_#####.png");
-    }
-    // saveFrame("frames/test_#####.png");
-    // fill(255);
-    // rect(disp.x, disp.y, squareSize, squareSize);
-    // rect(0, 0, w, h);
 }
 float backgroundColor;
 int backgroundSaturation;
@@ -280,7 +252,7 @@ class Triangle extends Polygon{
     //Revisa si algun vertice está dentro de la ventana
     public boolean inWindow() {
         for (PVector v : this.vertices) {
-            if ((v.x >= 0 && v.x <= w) && (v.y >= 0 && v.y <= h)) return true;
+            if ((v.x >= 0 - margin && v.x <= w + margin) && (v.y >= 0 - margin && v.y <= h + margin)) return true;
         }
         return false;
     }
@@ -891,7 +863,7 @@ public void initLetters() {
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
 
-    float kitesPerLetter = 9;
+    float kitesPerLetter = 40;
     
     float letterW = mask.letterWidth * mask.boxWidth;
     println("letterW:", letterW);
@@ -1206,6 +1178,57 @@ class Tile extends Polygon{
         arc(this.vertices[arc2Center].x, this.vertices[arc2Center].y, 2 * arc2Radius, 2 * arc2Radius, arc2MinAngle, arc2MaxAngle);
         strokeWeight(1.5f / height);
     }
+    public void drawRainbow() {
+        float currentColor;
+        float currentSat;
+        float currentBright;
+        if (mask.itsLetter(this)) {
+            currentColor = random(360);
+            currentBright = 100;
+            currentSat = 100;
+        }
+        else {
+            currentColor = 0;
+            currentSat = 0;
+            currentBright = random(50, 65);
+        }
+        stroke(color(currentColor, currentSat, currentBright));
+        fill(color(currentColor, currentSat, currentBright));
+        quad(
+            this.vertices[0].x,
+            this.vertices[0].y,
+            this.vertices[1].x,
+            this.vertices[1].y,
+            this.vertices[2].x,
+            this.vertices[2].y,
+            this.vertices[3].x,
+            this.vertices[3].y
+        );
+    }
+}
+public ArrayList<Triangle> getSuccs() {
+    ArrayList<Triangle> aux = new ArrayList<Triangle>();
+    for (Triangle t : triangles) {
+        for (Triangle succ : t.succ()) {
+            if (succ.nearWindow()) aux.add(succ);
+        }
+    }      
+    return aux;
+}
+
+public void generateTiling() {
+    //searchStep
+    ArrayList<Triangle> succs = getSuccs();
+    while (!succs.isEmpty()) {
+        triangles = succs;
+        succs = getSuccs();
+    }
+    while (!triangles.isEmpty()) {
+        Triangle current = triangles.remove(triangles.size() - 1);
+        grid.add(current);
+        Tile tile = current.generateTile();
+        if (tile != null) tiles.add(tile);    
+    }
 }
 float l, phi, tolerableError, squareSize, w, h;
 float[] phiPowers, phiInversePowers;
@@ -1229,7 +1252,7 @@ public void initValues() {
     //Tamaño del lado más corto en las teselas objetivo
     // l = 0.03444;
     // margin = phi * l;
-    margin = 0;
+    margin = 1;
     tolerableError = 1e-5f;
     //La ventana estará dentro de un cuadrado más grande y podría ubicarse dentro de cualquier punto dentro de él
     squareSize = pow(phi, 4) * h;
@@ -1274,7 +1297,7 @@ public void initValues() {
     kites = 0;
     darts = 0;
     styledTiles = new ArrayList<Tile>();
-    show = true;
+    show = false;
 }
   public void settings() {  size(1200, 800); }
   static public void main(String[] passedArgs) {

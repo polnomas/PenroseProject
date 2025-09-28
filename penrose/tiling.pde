@@ -105,4 +105,31 @@ class Tile extends Polygon{
         arc(this.vertices[arc2Center].x, this.vertices[arc2Center].y, 2 * arc2Radius, 2 * arc2Radius, arc2MinAngle, arc2MaxAngle);
         strokeWeight(1.5 / height);
     }
+    void drawRainbow() {
+        float currentColor;
+        float currentSat;
+        float currentBright;
+        if (mask.itsLetter(this)) {
+            currentColor = random(360);
+            currentBright = 100;
+            currentSat = 100;
+        }
+        else {
+            currentColor = 0;
+            currentSat = 0;
+            currentBright = random(50, 65);
+        }
+        stroke(color(currentColor, currentSat, currentBright));
+        fill(color(currentColor, currentSat, currentBright));
+        quad(
+            this.vertices[0].x,
+            this.vertices[0].y,
+            this.vertices[1].x,
+            this.vertices[1].y,
+            this.vertices[2].x,
+            this.vertices[2].y,
+            this.vertices[3].x,
+            this.vertices[3].y
+        );
+    }
 }

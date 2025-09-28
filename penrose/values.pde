@@ -20,7 +20,7 @@ void initValues() {
     //Tamaño del lado más corto en las teselas objetivo
     // l = 0.03444;
     // margin = phi * l;
-    margin = 0;
+    margin = 1;
     tolerableError = 1e-5;
     //La ventana estará dentro de un cuadrado más grande y podría ubicarse dentro de cualquier punto dentro de él
     squareSize = pow(phi, 4) * h;
@@ -65,5 +65,5 @@ void initValues() {
     kites = 0;
     darts = 0;
     styledTiles = new ArrayList<Tile>();
-    show = true;
+    show = false;
 }

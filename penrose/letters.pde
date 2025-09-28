@@ -527,7 +527,7 @@ void initLetters() {
     mask = new LetterGrid();
     float letterArea = mask.boxWidth * mask.boxHeight;
 
-    float kitesPerLetter = 9;
+    float kitesPerLetter = 40;
     
     float letterW = mask.letterWidth * mask.boxWidth;
     println("letterW:", letterW);

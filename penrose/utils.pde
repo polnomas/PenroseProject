@@ -1,8 +1,10 @@
 ArrayList<Triangle> getSuccs() {
     ArrayList<Triangle> aux = new ArrayList<Triangle>();
-    for (Triangle succ : t.succ()) {
-        if (succ.nearWindow()) aux.add(succ);
-    }
+    for (Triangle t : triangles) {
+        for (Triangle succ : t.succ()) {
+            if (succ.nearWindow()) aux.add(succ);
+        }
+    }      
     return aux;
 }
 
