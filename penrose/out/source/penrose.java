@@ -14,12 +14,14 @@ import java.io.IOException;
 
 public class penrose extends PApplet {
 
+PGraphics pg;
+
 public void setup() {
     
     initLetters();
     initValues();
     initColors();
-    frameRate(60);
+    frameRate(24);
     if (!show) {
         generateTiling();
         scale(height / 2, height / 2);
@@ -29,6 +31,10 @@ public void setup() {
         // }
         // noLoop();
     }
+    pg = createGraphics(width, height);
+    generateFrames();
+    noLoop();
+    exit();
     // iterations = 0;
 }
 public void draw() {
@@ -36,6 +42,10 @@ public void draw() {
     strokeWeight(1.5f / height);
     for (Tile t : tiles) {
         t.drawRainbow();
+    }
+    saveFrame("frames/rainbow-####.png");
+    if (frameCount > 24*30) {
+        exit();
     }
 }
 float backgroundColor;
@@ -1182,19 +1192,25 @@ class Tile extends Polygon{
         float currentColor;
         float currentSat;
         float currentBright;
+        // float arc1CurrentColor;
+        // float arc1CurrentSat;
+        // float arc1CurrentBright;
         if (mask.itsLetter(this)) {
             currentColor = random(360);
             currentBright = 100;
             currentSat = 100;
+            // arc1CurrentColor = 0;
+            // arc1CurrentSat = 0;
+            // arc1CurrentBright = random(50, 65);
         }
         else {
             currentColor = 0;
             currentSat = 0;
             currentBright = random(50, 65);
         }
-        stroke(color(currentColor, currentSat, currentBright));
-        fill(color(currentColor, currentSat, currentBright));
-        quad(
+        pg.stroke(color(currentColor, currentSat, currentBright));
+        pg.fill(color(currentColor, currentSat, currentBright));
+        pg.quad(
             this.vertices[0].x,
             this.vertices[0].y,
             this.vertices[1].x,
@@ -1228,6 +1244,19 @@ public void generateTiling() {
         grid.add(current);
         Tile tile = current.generateTile();
         if (tile != null) tiles.add(tile);    
+    }
+}
+
+public void generateFrames() {
+    for (int i = 0; i < 24*30; i++) {
+        pg.beginDraw();
+        pg.scale(height / 2, height / 2);
+        pg.strokeWeight(1.5f / height);
+        for (Tile t : tiles) {
+            t.drawRainbow();
+        }
+        pg.endDraw();
+        pg.save("frames/rainbow" + nf(i, 4) + ".png");
     }
 }
 float l, phi, tolerableError, squareSize, w, h;
@@ -1299,7 +1328,7 @@ public void initValues() {
     styledTiles = new ArrayList<Tile>();
     show = false;
 }
-  public void settings() {  size(1200, 800); }
+  public void settings() {  size(1920, 1280); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "penrose" };
     if (passedArgs != null) {

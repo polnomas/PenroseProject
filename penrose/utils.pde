@@ -22,3 +22,16 @@ void generateTiling() {
         if (tile != null) tiles.add(tile);    
     }
 }
+
+void generateFrames() {
+    for (int i = 0; i < 24*30; i++) {
+        pg.beginDraw();
+        pg.scale(height / 2, height / 2);
+        pg.strokeWeight(1.5 / height);
+        for (Tile t : tiles) {
+            t.drawRainbow();
+        }
+        pg.endDraw();
+        pg.save("frames/rainbow" + nf(i, 4) + ".png");
+    }
+}

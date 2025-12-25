@@ -109,19 +109,25 @@ class Tile extends Polygon{
         float currentColor;
         float currentSat;
         float currentBright;
+        // float arc1CurrentColor;
+        // float arc1CurrentSat;
+        // float arc1CurrentBright;
         if (mask.itsLetter(this)) {
             currentColor = random(360);
             currentBright = 100;
             currentSat = 100;
+            // arc1CurrentColor = 0;
+            // arc1CurrentSat = 0;
+            // arc1CurrentBright = random(50, 65);
         }
         else {
             currentColor = 0;
             currentSat = 0;
             currentBright = random(50, 65);
         }
-        stroke(color(currentColor, currentSat, currentBright));
-        fill(color(currentColor, currentSat, currentBright));
-        quad(
+        pg.stroke(color(currentColor, currentSat, currentBright));
+        pg.fill(color(currentColor, currentSat, currentBright));
+        pg.quad(
             this.vertices[0].x,
             this.vertices[0].y,
             this.vertices[1].x,
